@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import json
 from collections import defaultdict
 from typing import Any
 
@@ -31,6 +32,29 @@ class HybridRetriever:
         if vectors is not None:
             new = np.asarray(vectors, dtype=np.float32)
             self.embeddings = new if self.embeddings is None else np.vstack([self.embeddings, new])
+
+    def save(self, path) -> None:
+        """Persist the index in a portable JSON file for single-process deployments."""
+        payload = {
+            "chunks": [{"text": c.text, "source": c.source, "page": c.page,
+                        "section": c.section, "chunk_index": c.chunk_index} for c in self.chunks],
+            "embeddings": self.embeddings.tolist() if self.embeddings is not None else [],
+        }
+        path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        temporary.write_text(json.dumps(payload), encoding="utf-8")
+        temporary.replace(path)
+
+    def load(self, path) -> None:
+        if not path.exists():
+            return
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        chunks = [Chunk(**item) for item in payload.get("chunks", [])]
+        embeddings = payload.get("embeddings") or None
+        self.chunks = []
+        self.embeddings = None
+        self.bm25 = None
+        self.add(chunks, embeddings)
 
     def search(self, question: str, query_vector: list[float] | None = None, top_k: int | None = None,
                semantic_weight: float | None = None, sparse_weight: float | None = None) -> list[dict[str, Any]]:

@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     rrf_k: int = 60
     dedup_threshold: float = 0.95
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    max_upload_mb: int = 25
 
     @property
     def chroma_dir(self) -> Path:

@@ -10,6 +10,10 @@ from .schemas import Citation
 
 def answer_question(retriever: HybridRetriever, question: str, top_k: int | None = None,
                     semantic_weight: float | None = None, sparse_weight: float | None = None) -> dict[str, Any]:
+    if not retriever.chunks:
+        return {"answer": "I don't know based on the indexed documents.", "citations": [],
+                "confidence": {"overall": 0.0, "retrieval": 0.0, "citation_coverage": 0.0, "completeness": 0.0, "label": "low"},
+                "abstained": True, "retrieved_chunks": []}
     query_vector = embed([question])[0]
     results = retriever.search(question, query_vector, top_k, semantic_weight, sparse_weight)
     results = retriever.rerank(question, results)
