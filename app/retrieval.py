@@ -39,26 +39,31 @@ class HybridRetriever:
 
     def save(self, path) -> None:
         """Persist the index in a portable JSON file for single-process deployments."""
-        payload = {
-            "chunks": [{"text": c.text, "source": c.source, "page": c.page,
-                        "section": c.section, "chunk_index": c.chunk_index} for c in self.chunks],
-            "embeddings": self.embeddings.tolist() if self.embeddings is not None else [],
-        }
+        payload = self.payload()
         path.parent.mkdir(parents=True, exist_ok=True)
         temporary = path.with_suffix(path.suffix + ".tmp")
         temporary.write_text(json.dumps(payload), encoding="utf-8")
         temporary.replace(path)
 
-    def load(self, path) -> None:
-        if not path.exists():
-            return
-        payload = json.loads(path.read_text(encoding="utf-8"))
+    def payload(self) -> dict:
+        return {
+            "chunks": [{"text": c.text, "source": c.source, "page": c.page,
+                        "section": c.section, "chunk_index": c.chunk_index} for c in self.chunks],
+            "embeddings": self.embeddings.tolist() if self.embeddings is not None else [],
+        }
+
+    def load_payload(self, payload: dict) -> None:
         chunks = [Chunk(**item) for item in payload.get("chunks", [])]
         embeddings = payload.get("embeddings") or None
         self.chunks = []
         self.embeddings = None
         self.bm25 = None
         self.add(chunks, embeddings)
+
+    def load(self, path) -> None:
+        if not path.exists():
+            return
+        self.load_payload(json.loads(path.read_text(encoding="utf-8")))
 
     def search(self, question: str, query_vector: list[float] | None = None, top_k: int | None = None,
                semantic_weight: float | None = None, sparse_weight: float | None = None) -> list[dict[str, Any]]:
@@ -70,11 +75,11 @@ class HybridRetriever:
             q = np.asarray(query_vector, dtype=np.float32)
             denom = np.linalg.norm(self.embeddings, axis=1) * np.linalg.norm(q)
             scores = np.divide(self.embeddings @ q, denom, out=np.zeros(len(self.chunks)), where=denom != 0)
-            dense = list(np.argsort(-scores)[:top_k])
+            dense = [int(value) for value in np.argsort(-scores)[:top_k]]
         sparse: list[int] = []
         if self.bm25 is not None:
             scores = self.bm25.get_scores(re.findall(r"\w+", question.lower()))
-            sparse = list(np.argsort(-scores)[:top_k])
+            sparse = [int(value) for value in np.argsort(-scores)[:top_k]]
         fused: dict[int, float] = defaultdict(float)
         details: dict[int, dict[str, float]] = defaultdict(lambda: {"semantic_rank": 0, "sparse_rank": 0})
         for rank, idx in enumerate(dense, 1):
