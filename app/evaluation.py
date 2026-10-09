@@ -4,8 +4,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .config import settings
-from .ingestion import ingest_paths
+try:
+    from .config import settings
+    from .ingestion import ingest_paths
+except ImportError:
+    from config import settings
+    from ingestion import ingest_paths
 
 
 def load_dataset(path: str | None = None) -> list[dict[str, Any]]:

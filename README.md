@@ -34,3 +34,14 @@ Open `http://localhost:8000`. Set `OPENAI_API_KEY` in `.env` for embeddings and 
 - `GET /healthz` and `GET /readyz` — container/orchestrator health checks.
 
 The implementation is intentionally provider-configurable: any OpenAI-compatible endpoint can be selected with `OPENAI_BASE_URL`, `EMBEDDING_MODEL`, and `GENERATION_MODEL`.
+
+## Cloudflare deployment
+
+The repository includes `wrangler.jsonc`, `pyproject.toml`, and a Python Worker entrypoint for Cloudflare. With Wrangler authenticated:
+
+```bash
+npx wrangler deploy
+npx wrangler secret put OPENAI_API_KEY
+```
+
+The current deployment is suitable for a demo. For production-scale document persistence, replace the local JSON index with R2 plus Vectorize or another managed vector database.

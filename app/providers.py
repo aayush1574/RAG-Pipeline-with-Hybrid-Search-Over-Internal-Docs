@@ -1,4 +1,7 @@
-from .config import settings
+try:
+    from .config import settings
+except ImportError:
+    from config import settings
 
 
 def client():

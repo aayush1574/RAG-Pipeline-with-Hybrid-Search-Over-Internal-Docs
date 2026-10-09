@@ -3,9 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .providers import complete, embed
-from .retrieval import HybridRetriever
-from .schemas import Citation
+try:
+    from .providers import complete, embed
+    from .retrieval import HybridRetriever
+    from .schemas import Citation
+except ImportError:
+    from providers import complete, embed
+    from retrieval import HybridRetriever
+    from schemas import Citation
 
 
 def answer_question(retriever: HybridRetriever, question: str, top_k: int | None = None,

@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "internal-docs-hybrid-rag",
+  "main": "app/worker.py",
+  "compatibility_date": "2026-10-09",
+  "compatibility_flags": ["python_workers"],
+  "assets": {
+    "directory": "./frontend",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": true
+  }
+}

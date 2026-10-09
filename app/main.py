@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import tempfile
 import shutil
 from uuid import uuid4
@@ -6,13 +7,22 @@ from uuid import uuid4
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
 
-from .config import settings
-from .evaluation import evaluate, load_dataset
-from .generation import answer_question
-from .ingestion import ingest_paths
-from .providers import embed
-from .retrieval import HybridRetriever
-from .schemas import AskRequest, EvaluationRequest
+try:
+    from .config import settings
+    from .evaluation import evaluate, load_dataset
+    from .generation import answer_question
+    from .ingestion import ingest_paths
+    from .providers import embed
+    from .retrieval import HybridRetriever
+    from .schemas import AskRequest, EvaluationRequest
+except ImportError:
+    from config import settings
+    from evaluation import evaluate, load_dataset
+    from generation import answer_question
+    from ingestion import ingest_paths
+    from providers import embed
+    from retrieval import HybridRetriever
+    from schemas import AskRequest, EvaluationRequest
 
 app = FastAPI(title="Internal Docs Hybrid RAG", version="1.0.0")
 retriever = HybridRetriever()
@@ -89,5 +99,5 @@ def run_evaluation(request: EvaluationRequest):
 
 
 frontend = Path(__file__).parent.parent / "frontend"
-if frontend.exists():
+if frontend.exists() and os.getenv("CLOUDFLARE_WORKER") != "1":
     app.mount("/", StaticFiles(directory=frontend, html=True), name="frontend")

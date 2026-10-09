@@ -16,8 +16,12 @@ except ImportError:  # keeps the API importable before optional dependencies are
             query = set(query)
             return np.array([sum(token in query for token in doc) for doc in self.corpus], dtype=float)
 
-from .config import settings
-from .ingestion import Chunk
+try:
+    from .config import settings
+    from .ingestion import Chunk
+except ImportError:
+    from config import settings
+    from ingestion import Chunk
 
 
 class HybridRetriever:
