@@ -13,3 +13,4 @@ def test_ingest_and_ask_without_external_api_key():
     answer = client.post("/v1/ask", json={"question": "How do employees request access?"})
     assert answer.status_code == 200
     assert "security portal" in answer.json()["answer"]
+    assert answer.json()["retrieval_trace"]["original_query"] == "How do employees request access?"

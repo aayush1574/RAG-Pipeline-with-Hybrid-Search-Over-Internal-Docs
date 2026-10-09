@@ -10,6 +10,7 @@ Production-oriented reference implementation for the attached project brief.
 - Optional cross-encoder reranking.
 - Grounded generation with numbered citations, citation verification, confidence scoring, and an explicit abstention path.
 - Evaluation harness with a starter golden dataset and chunking-strategy comparison.
+- Query rewriting, exact-query retry, relevance gating, and retrieval traces for debugging.
 - FastAPI endpoints, a small browser dashboard, and Docker Compose.
 - Atomic on-disk index persistence under `data/index.json`, so indexed documents survive API restarts.
 

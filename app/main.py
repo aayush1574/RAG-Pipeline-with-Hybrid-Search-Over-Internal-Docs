@@ -40,7 +40,9 @@ def healthz():
 
 @app.get("/readyz", tags=["operations"])
 def readyz():
-    return {"status": "ready", "indexed_chunks": len(retriever.chunks), "provider_configured": bool(settings.openai_api_key)}
+    return {"status": "ready", "indexed_chunks": len(retriever.chunks), "provider_configured": bool(settings.openai_api_key),
+            "features": {"query_rewrite": bool(settings.openai_api_key), "fallback_embeddings": not bool(settings.openai_api_key),
+                         "reranking": True, "persistent_index": True}}
 
 
 @app.get("/v1/documents")

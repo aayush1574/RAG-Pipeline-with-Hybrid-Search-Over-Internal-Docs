@@ -53,3 +53,12 @@ def complete(system: str, user: str) -> str:
     response = client().chat.completions.create(model=settings.generation_model,
         messages=[{"role": "system", "content": system}, {"role": "user", "content": user}], temperature=0)
     return response.choices[0].message.content or ""
+
+
+def rewrite_query(question: str) -> str:
+    if not settings.openai_api_key:
+        return question
+    return complete(
+        "Rewrite search queries for internal documentation retrieval. Return only the rewritten query.",
+        f"Rewrite this question into a concise search query preserving exact identifiers and error codes:\n{question}",
+    ).strip() or question
